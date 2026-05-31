@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Нерухомість Звягель — купівля, продаж, оренда</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+(function(){
+  try{
+    var f=localStorage.getItem('nd_filters'); if(f) window._savedFilters=JSON.parse(f);
+    window._savedSearch=localStorage.getItem('nd_search')||'';
+    window._savedSort=localStorage.getItem('nd_sort')||'newest';
+    window._savedScroll=parseInt(localStorage.getItem('nd_scroll')||'0');
+  }catch(e){}
+})();
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig={
+    apiKey:"AIzaSyDrtZhY-HP9HPoTZupa5VqkxW6I7_0W9Rg",
+    authDomain:"shina-zvyagel.firebaseapp.com",
+    projectId:"shina-zvyagel",
+    storageBucket:"shina-zvyagel.firebasestorage.app",
+    messagingSenderId:"295644049393",
+    appId:"1:295644049393:web:d16468f32bbe95ec809e50"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db=firebase.firestore();
+  const auth=firebase.auth();
+</script>
+<script>
+let ND_PRICES={
+  publish:50,
+  renew:50,
+  active_days:30,
+  inactive_days:30,
+};
+async function loadNDPrices(){
+  try{
+    const snap=await db.collection('nd_config').doc('prices').get();
+    if(snap.exists) ND_PRICES={...ND_PRICES,...snap.data()};
+  }catch(e){}
+}
+loadNDPrices();
+</script>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#F5F3EE;--bg-card:#FFFFFF;--bg-alt:#EDEAE3;
+    --text:#1A1917;--text-muted:#7A7770;--text-hint:#B0ADA5;
+    --border:rgba(26,25,23,0.1);--border-mid:rgba(26,25,23,0.18);
+    --accent:#1A1917;--accent-text:#F5F3EE;
+    --green:#2E6E47;--green-bg:#EAF4EE;
+    --red:#A3301D;--red-bg:#FAECE8;
+    --amber:#8A5C0A;--amber-bg:#FDF3E0;
+    --blue:#1A4A8A;--blue-bg:#E8F0FA;
+    --radius:12px;--radius-sm:8px;
+    --shadow:0 1px 3px rgba(0,0,0,0.07),0 4px 12px rgba(0,0,0,0.04);
+  }
+  body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
+  header{background:var(--accent);color:var(--accent-text);padding:0 1.5rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .logo{display:flex;align-items:center;gap:10px;font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;letter-spacing:-0.02em;color:var(--accent-text);text-decoration:none}
+  .header-right{display:flex;gap:8px;align-items:center}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-sm);border:1.5px solid transparent;font-family:'Manrope',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;text-decoration:none}
+  .btn-ghost{border-color:rgba(245,243,238,0.25);color:var(--accent-text);background:transparent}
+  .btn-ghost:hover{background:rgba(245,243,238,0.12)}
+  .btn-white{background:var(--accent-text);color:var(--accent);border-color:var(--accent-text)}
+  .btn-white:hover{background:#E8E5DF}
+  .btn-dark{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+  .btn-dark:hover{background:#333}
+  .btn-outline{background:transparent;color:var(--text);border-color:var(--border-mid)}
+  .btn-outline:hover{background:var(--bg-alt)}
+  .btn svg{width:16px;height:16px;flex-shrink:0}
+  .hero{background:var(--accent);padding:1.5rem 1.5rem 1.25rem}
+  .hero-title{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:400;color:rgba(245,243,238,0.5);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.5rem}
+  .search-wrap{display:flex;gap:8px;max-width:680px;position:relative}
+  .search-wrap input{flex:1;padding:11px 16px;border-radius:var(--radius-sm);border:1.5px solid rgba(245,243,238,0.15);background:rgba(245,243,238,0.08);color:var(--accent-text);font-family:'Manrope',sans-serif;font-size:14px;outline:none;transition:border-color 0.15s}
+  .search-wrap input::placeholder{color:rgba(245,243,238,0.35)}
+  .search-wrap input:focus{border-color:rgba(245,243,238,0.5)}
+  .stats-bar{background:var(--bg-card);border-bottom:1px solid var(--border);padding:0.6rem 1.5rem;display:flex;gap:1.5rem;align-items:center;font-size:12px;color:var(--text-muted);overflow-x:auto}
+  .stats-bar span{white-space:nowrap}
+  .stats-bar b{color:var(--text);font-weight:600}
+  .layout{display:flex;min-height:calc(100vh - 60px - 42px - 60px)}
+  .sidebar{width:236px;flex-shrink:0;background:var(--bg-card);border-right:1px solid var(--border);padding:1.25rem 1rem;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto}
+  .filter-group{margin-bottom:1.25rem}
+  .filter-group-title{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-hint);margin-bottom:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{padding:5px 11px;border-radius:20px;border:1px solid var(--border-mid);font-size:12px;font-weight:500;cursor:pointer;background:transparent;color:var(--text-muted);font-family:'Manrope',sans-serif;transition:all 0.15s;line-height:1}
+  .chip:hover{border-color:var(--text);color:var(--text)}
+  .chip.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+  .fsel{width:100%;padding:7px 10px;border:1px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;font-size:12px;outline:none;cursor:pointer;margin-bottom:6px}
+  .fsel:focus{border-color:var(--accent)}
+  .divider{height:1px;background:var(--border);margin:0 0 1.25rem}
+  .main{flex:1;padding:1.25rem;min-width:0}
+  .main-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:8px}
+  .result-count{font-size:13px;color:var(--text-muted)}
+  .result-count b{color:var(--text)}
+  .sort-sel{padding:7px 12px;border:1px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--bg-card);color:var(--text);font-family:'Manrope',sans-serif;font-size:12px;font-weight:500;outline:none;cursor:pointer}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,border-color 0.15s;position:relative}
+  .card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--border-mid)}
+  .card-thumb{height:180px;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+  .card-thumb img{width:100%;height:100%;object-fit:cover}
+  .card-thumb svg{opacity:0.15;width:72px;height:72px}
+  .badges{position:absolute;top:8px;left:8px;display:flex;gap:4px;flex-wrap:wrap}
+  .badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;line-height:1.4}
+  .badge-sell{background:var(--green-bg);color:var(--green)}
+  .badge-rent{background:var(--blue-bg);color:var(--blue)}
+  .badge-new{background:var(--amber-bg);color:var(--amber)}
+  .fav-btn{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.85);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;backdrop-filter:blur(4px)}
+  .fav-btn:hover{background:white;transform:scale(1.1)}
+  .fav-btn svg{width:15px;height:15px}
+  .fav-btn.active svg{fill:#E24B4A;stroke:#E24B4A}
+  .card-body{padding:12px 14px 14px}
+  .card-name{font-size:14px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card-sub{font-size:12px;color:var(--text-muted);margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap}
+  .card-sub span{background:var(--bg);padding:2px 7px;border-radius:4px;font-size:11px}
+  .card-price{font-size:19px;font-weight:700;font-family:'Unbounded',sans-serif;letter-spacing:-0.03em}
+  .card-price-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+  .card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+  .card-city{font-size:11px;color:var(--text-hint);display:flex;align-items:center;gap:3px}
+  .card-city svg{width:10px;height:10px}
+  .empty{grid-column:1/-1;text-align:center;padding:4rem 1rem;color:var(--text-muted)}
+  .empty svg{width:56px;height:56px;opacity:0.15;margin:0 auto 1rem;display:block}
+  .empty p{font-size:15px;font-weight:500;margin-bottom:4px;color:var(--text)}
+  .overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:200}
+  .overlay.open{display:block}
+  .modal{position:fixed;left:0;right:0;bottom:0;width:100%;max-height:90vh;overflow-y:scroll;overflow-x:hidden;background:var(--bg-card);border-radius:16px 16px 0 0;z-index:201;box-shadow:0 -4px 20px rgba(0,0,0,0.3)}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.25rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg-card);z-index:1}
+  .modal-head h2{font-size:16px;font-weight:700}
+  .close-btn{width:30px;height:30px;border-radius:50%;border:none;background:var(--bg-alt);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all 0.15s;flex-shrink:0}
+  .close-btn:hover{background:var(--border-mid);color:var(--text)}
+  .close-btn svg{width:14px;height:14px}
+  .modal-body{padding:1.25rem}
+  .modal-foot{display:flex;gap:8px;justify-content:flex-end;padding:1rem 1.25rem;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--bg-card)}
+  .fg{margin-bottom:1rem}
+  label.fl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin-bottom:6px}
+  .finput{width:100%;padding:9px 13px;border:1.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;font-size:13px;outline:none;transition:border-color 0.15s}
+  .finput:focus{border-color:var(--accent);background:var(--bg-card)}
+  .finput::placeholder{color:var(--text-hint)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .toggle-row{display:flex;gap:6px;flex-wrap:wrap}
+  .detail-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.25rem}
+  .ds-item{background:var(--bg);padding:10px 12px;border-radius:var(--radius-sm)}
+  .ds-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-hint);margin-bottom:3px}
+  .ds-val{font-size:14px;font-weight:600}
+  .detail-price{font-family:'Unbounded',sans-serif;font-size:26px;font-weight:700;letter-spacing:-0.03em;margin-bottom:4px}
+  .phone-btn{display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--green-bg);color:var(--green);border-radius:var(--radius-sm);font-size:15px;font-weight:700;border:none;cursor:pointer;width:100%;justify-content:center;font-family:'Manrope',sans-serif}
+  .phone-btn svg{width:18px;height:18px}
+  .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--accent);color:var(--accent-text);padding:11px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;opacity:0;transform:translateY(8px);transition:opacity 0.25s,transform 0.25s;z-index:9999;display:flex;align-items:center;gap:8px;pointer-events:none;max-width:280px;box-shadow:0 4px 20px rgba(0,0,0,0.25)}
+  .toast.show{opacity:1;transform:translateY(0)}
+  .toast svg{width:15px;height:15px;flex-shrink:0}
+  footer{background:var(--accent);color:rgba(245,243,238,0.45);padding:1rem 1.5rem;font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  footer a{color:rgba(245,243,238,0.45);text-decoration:none}
+  footer a:hover{color:rgba(245,243,238,0.8)}
+  .photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px}
+  .photo-thumb{position:relative;aspect-ratio:1;border-radius:var(--radius-sm);overflow:hidden;background:var(--bg-alt)}
+  .photo-thumb img{width:100%;height:100%;object-fit:cover}
+  .photo-del{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,0.6);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff}
+  .photo-del svg{width:10px;height:10px}
+  .photo-main-badge{position:absolute;bottom:3px;left:3px;font-size:8px;font-weight:700;background:rgba(0,0,0,0.6);color:#fff;padding:2px 5px;border-radius:3px}
+  @media(max-width:640px){
+    .sidebar{display:none}
+    .hero{padding:1.25rem 1rem}
+    .main{padding:1rem}
+    header{padding:0 1rem}
+    .stats-bar{padding:0.6rem 1rem}
+    .grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="#" class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Нерухомість · Звягель
+  </a>
+  <div class="header-right">
+    <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Звягель
+    </button>
+    <button class="btn btn-ghost" id="authBtn" onclick="openModal('loginModal')" style="font-size:12px;padding:6px 12px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Увійти
+    </button>
+    <button class="btn btn-white" onclick="openModal('addModal')" style="font-size:12px;padding:8px 14px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Подати оголошення
+    </button>
+  </div>
+</header>
+
+<div class="hero" style="position:relative">
+  <div class="hero-title">Нерухомість · купівля, продаж, оренда · Звягель</div>
+  <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+    <button class="btn btn-white" id="catAllBtn" onclick="setCat('all')" style="font-size:12px;padding:6px 14px">Всі</button>
+    <button class="btn btn-ghost" id="catApartBtn" onclick="setCat('apartment')" style="font-size:12px;padding:6px 14px;border-color:rgba(245,243,238,0.25)">🏢 Квартири</button>
+    <button class="btn btn-ghost" id="catHouseBtn" onclick="setCat('house')" style="font-size:12px;padding:6px 14px;border-color:rgba(245,243,238,0.25)">🏠 Будинки</button>
+    <button class="btn btn-ghost" id="catLandBtn" onclick="setCat('land')" style="font-size:12px;padding:6px 14px;border-color:rgba(245,243,238,0.25)">🌳 Ділянки</button>
+    <button class="btn btn-ghost" id="catCommBtn" onclick="setCat('commercial')" style="font-size:12px;padding:6px 14px;border-color:rgba(245,243,238,0.25)">🏪 Комерційна</button>
+    <button class="btn btn-ghost" id="catGarageBtn" onclick="setCat('garage')" style="font-size:12px;padding:6px 14px;border-color:rgba(245,243,238,0.25)">🚗 Гаражі</button>
+  </div>
+  <div class="search-wrap">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(245,243,238,0.5)" stroke-width="2" style="flex-shrink:0;align-self:center"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+    <input type="text" id="searchInput" placeholder="Пошук: квартира, будинок, оренда, район..." oninput="onSearchInput(this.value)" autocomplete="off">
+    <button class="btn btn-white" onclick="filterCards()">Знайти</button>
+  </div>
+  <div id="autocompleteList" style="display:none;position:absolute;left:1.5rem;right:1.5rem;background:#fff;border-radius:0 0 10px 10px;box-shadow:0 8px 24px rgba(0,0,0,0.25);z-index:9999;max-height:280px;overflow-y:auto;border:1px solid rgba(0,0,0,0.12);border-top:none"></div>
+</div>
+
+<div class="stats-bar">
+  <span id="resultCount">Завантаження...</span>
+  <span>·</span><span id="statSell">— продаж</span>
+  <span>·</span><span id="statRent">— оренда</span>
+  <span>·</span><span>Оновлено сьогодні</span>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="filter-group">
+      <div class="filter-group-title">Категорія</div>
+      <div class="chips">
+        <button class="chip on" data-f="cat" data-v="all" onclick="setFilter('cat','all',this)">Всі</button>
+        <button class="chip" data-f="cat" data-v="apartment" onclick="setFilter('cat','apartment',this)">🏢 Квартири</button>
+        <button class="chip" data-f="cat" data-v="house" onclick="setFilter('cat','house',this)">🏠 Будинки</button>
+        <button class="chip" data-f="cat" data-v="land" onclick="setFilter('cat','land',this)">🌳 Ділянки</button>
+        <button class="chip" data-f="cat" data-v="commercial" onclick="setFilter('cat','commercial',this)">🏪 Комерційна</button>
+        <button class="chip" data-f="cat" data-v="garage" onclick="setFilter('cat','garage',this)">🚗 Гараж</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="filter-group">
+      <div class="filter-group-title">Тип операції</div>
+      <div class="chips">
+        <button class="chip on" data-f="deal" data-v="all" onclick="setFilter('deal','all',this)">Всі</button>
+        <button class="chip" data-f="deal" data-v="sell" onclick="setFilter('deal','sell',this)">Продаж</button>
+        <button class="chip" data-f="deal" data-v="rent" onclick="setFilter('deal','rent',this)">Оренда</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="filter-group">
+      <div class="filter-group-title">Кімнат</div>
+      <div class="chips">
+        <button class="chip on" data-f="rooms" data-v="all" onclick="setFilter('rooms','all',this)">Всі</button>
+        <button class="chip" data-f="rooms" data-v="1" onclick="setFilter('rooms','1',this)">1</button>
+        <button class="chip" data-f="rooms" data-v="2" onclick="setFilter('rooms','2',this)">2</button>
+        <button class="chip" data-f="rooms" data-v="3" onclick="setFilter('rooms','3',this)">3</button>
+        <button class="chip" data-f="rooms" data-v="4+" onclick="setFilter('rooms','4+',this)">4+</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="filter-group">
+      <div class="filter-group-title">Район міста</div>
+      <select class="fsel" id="districtFilter" onchange="filterCards()">
+        <option value="">Будь-який район</option>
+        <option>Центр</option>
+        <option>Північ</option>
+        <option>Південь</option>
+        <option>Схід</option>
+        <option>Захід</option>
+        <option>Приміська зона</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-group-title">Ціна (грн)</div>
+      <div class="row2" style="gap:6px">
+        <input class="fsel" type="number" id="priceMin" placeholder="Від" onchange="filterCards()" style="margin-bottom:0">
+        <input class="fsel" type="number" id="priceMax" placeholder="До" onchange="filterCards()" style="margin-bottom:0">
+      </div>
+    </div>
+    <div class="divider"></div>
+    <button class="btn btn-outline" style="width:100%;justify-content:center;font-size:12px" onclick="resetFilters()">Скинути фільтри</button>
+    <button class="btn btn-dark" style="width:100%;justify-content:center;font-size:13px;margin-top:8px" onclick="filterCards()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px"><polyline points="20 6 9 17 4 12"/></svg>
+      Застосувати
+    </button>
+  </aside>
+
+  <main class="main">
+    <div class="main-header">
+      <div class="result-count" id="resultCountMain">Знайдено: <b>0</b> оголошень</div>
+      <select class="sort-sel" id="sortSel" onchange="filterCards()">
+        <option value="newest">Новіші спочатку</option>
+        <option value="cheap">Дешевші спочатку</option>
+        <option value="expensive">Дорожчі спочатку</option>
+        <option value="area">Більша площа</option>
+      </select>
+    </div>
+    <div class="grid" id="cardsGrid"></div>
+  </main>
+</div>
+
+<footer>
+  <span>© 2026 Нерухомість.Звягель — локальний майданчик</span>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <span>
+      <a href="#" onclick="openModal('rulesModal');return false">Правила</a> ·
+      <a href="#" onclick="openModal('contactsModal');return false">Контакти</a>
+    </span>
+    <button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;opacity:0.5" onclick="openAdminModal()">🛡 Адмін</button>
+  </div>
+</footer>
+
+<div class="toast" id="toastEl">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<!-- POPUP BANNER NOVO TAXI -->
+<div id="popupBanner" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;align-items:center;justify-content:center;padding:1.5rem">
+  <div style="background:#111111;border-radius:16px;width:100%;max-width:400px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);position:relative;border:2px solid #C8F135">
+    <button onclick="closePopup()" style="position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,0.1);cursor:pointer;font-size:16px;color:#fff;display:flex;align-items:center;justify-content:center;z-index:1">✕</button>
+    <div style="background:#111111;padding:1.5rem 1.5rem 1rem;text-align:center;border-bottom:3px solid #C8F135">
+      <svg width="120" height="60" viewBox="0 0 120 60" style="margin:0 auto 10px;display:block">
+        <rect x="10" y="20" width="100" height="32" rx="6" fill="#C8F135"/>
+        <rect x="22" y="10" width="76" height="28" rx="5" fill="#C8F135"/>
+        <rect x="28" y="14" width="26" height="20" rx="3" fill="#111" opacity="0.7"/>
+        <rect x="66" y="14" width="26" height="20" rx="3" fill="#111" opacity="0.7"/>
+        <circle cx="32" cy="54" r="10" fill="#222"/><circle cx="32" cy="54" r="6" fill="#444"/><circle cx="32" cy="54" r="3" fill="#C8F135"/>
+        <circle cx="88" cy="54" r="10" fill="#222"/><circle cx="88" cy="54" r="6" fill="#444"/><circle cx="88" cy="54" r="3" fill="#C8F135"/>
+        <rect x="2" y="30" width="10" height="8" rx="2" fill="#C8F135"/>
+        <rect x="108" y="30" width="10" height="8" rx="2" fill="#ff4444"/>
+        <text x="60" y="30" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="6" fill="#C8F135">TAXI</text>
+      </svg>
+      <div style="font-size:11px;font-weight:800;color:#C8F135;letter-spacing:3px;margin-bottom:4px">ЗВЯГЕЛЬ</div>
+      <div style="font-size:20px;font-weight:900;color:#fff;font-family:Arial Black,sans-serif">Таксі у Звягелі</div>
+      <div style="font-size:12px;color:#888;margin-top:4px">Novo Taxi — швидко та надійно</div>
+    </div>
+    <div style="padding:1rem 1.5rem;background:#111111">
+      <div style="display:flex;justify-content:space-around;margin-bottom:0.75rem">
+        <div style="text-align:center"><div style="font-size:18px;font-weight:900;color:#C8F135;font-family:Arial Black,sans-serif">5хв</div><div style="font-size:9px;color:#666;text-transform:uppercase">Подача</div></div>
+        <div style="text-align:center"><div style="font-size:18px;font-weight:900;color:#C8F135;font-family:Arial Black,sans-serif">24/7</div><div style="font-size:9px;color:#666;text-transform:uppercase">Завжди</div></div>
+        <div style="text-align:center"><div style="font-size:18px;font-weight:900;color:#C8F135;font-family:Arial Black,sans-serif">100%</div><div style="font-size:9px;color:#666;text-transform:uppercase">Місцеві</div></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="closePopup()" style="flex:1;padding:10px;border-radius:8px;border:1px solid #333;background:transparent;font-size:12px;font-weight:600;cursor:pointer;color:#666;font-family:'Manrope',sans-serif">Пізніше</button>
+        <button onclick="window.open('https://novotaxi.online/','_blank');closePopup()" style="flex:2;padding:10px;border-radius:8px;border:none;background:#C8F135;color:#111;font-size:13px;font-weight:900;cursor:pointer;font-family:Arial Black,sans-serif">ЗАМОВИТИ →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="overlay" id="loginModal" onclick="closeOverlay(event,'loginModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h2 id="loginTitle">Увійти</h2>
+      <button class="close-btn" onclick="closeModal('loginModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+    </div>
+    <div id="tabLogin">
+      <div class="modal-body">
+        <div class="fg"><label class="fl">Телефон</label><input class="finput" id="loginPhone" placeholder="+380 67 123 45 67" type="tel"></div>
+        <div class="fg"><label class="fl">Пароль</label><input class="finput" id="loginPass" type="password" placeholder="мін. 6 символів"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="switchAuthTab('reg')">Реєстрація</button>
+        <button class="btn btn-dark" onclick="doLogin()">Увійти</button>
+      </div>
+    </div>
+    <div id="tabReg" style="display:none">
+      <div class="modal-body">
+        <div class="fg"><label class="fl">Ваше ім'я</label><input class="finput" id="regName" placeholder="Іван"></div>
+        <div class="fg"><label class="fl">Телефон</label><input class="finput" id="regPhone" placeholder="+380 67 123 45 67" type="tel"></div>
+        <div class="fg"><label class="fl">Пароль</label><input class="finput" id="regPass" type="password" placeholder="мін. 6 символів"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="switchAuthTab('login')">Вже є акаунт</button>
+        <button class="btn btn-dark" onclick="doRegister()">Зареєструватись</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="overlay" id="addModal" onclick="closeOverlay(event,'addModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h2>Нове оголошення</h2>
+      <button class="close-btn" onclick="closeModal('addModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+    </div>
+    <div class="modal-body">
+
+      <!-- ТИП ОПЕРАЦІЇ -->
+      <div class="fg">
+        <label class="fl">Тип операції</label>
+        <div class="toggle-row">
+          <button class="btn btn-dark" id="dealSellBtn" onclick="setDeal('sell')">Продаж</button>
+          <button class="btn btn-outline" id="dealRentBtn" onclick="setDeal('rent')">Оренда</button>
+        </div>
+      </div>
+
+      <!-- КАТЕГОРІЯ -->
+      <div class="fg">
+        <label class="fl">Категорія</label>
+        <select class="finput" id="adCatSel" onchange="onAdCatChange()">
+          <option value="">— Оберіть категорію —</option>
+          <option value="apartment">🏢 Квартира</option>
+          <option value="house">🏠 Будинок</option>
+          <option value="land_build">🏗️ Ділянка під будівництво</option>
+          <option value="land_agri">🌾 Земельна ділянка (с/г)</option>
+          <option value="commercial_office">🏢 Офіс</option>
+          <option value="commercial_shop">🏪 Магазин / торгова площа</option>
+          <option value="commercial_warehouse">🏭 Склад / виробниче приміщення</option>
+          <option value="garage">🚗 Гараж</option>
+          <option value="parking">🅿️ Паркомісце</option>
+        </select>
+      </div>
+
+      <!-- ПАРАМЕТРИ КВАРТИРИ/БУДИНКУ -->
+      <div id="paramRooms" style="display:none">
+        <div class="row3">
+          <div class="fg">
+            <label class="fl">Кімнат</label>
+            <select class="finput" id="adRooms">
+              <option value="">—</option>
+              <option value="1">1</option><option value="2">2</option>
+              <option value="3">3</option><option value="4+">4+</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">Поверх</label>
+            <input class="finput" id="adFloor" type="number" placeholder="3" min="1">
+          </div>
+          <div class="fg">
+            <label class="fl">Поверховість</label>
+            <input class="finput" id="adFloors" type="number" placeholder="9" min="1">
+          </div>
+        </div>
+        <div class="row2">
+          <div class="fg">
+            <label class="fl">Загальна площа (м²)</label>
+            <input class="finput" id="adArea" type="number" placeholder="65">
+          </div>
+          <div class="fg">
+            <label class="fl">Житлова площа (м²)</label>
+            <input class="finput" id="adLivingArea" type="number" placeholder="40">
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl">Стан</label>
+          <select class="finput" id="adCondition">
+            <option value="">— Оберіть —</option>
+            <option>Євроремонт</option>
+            <option>Косметичний ремонт</option>
+            <option>Жилий стан</option>
+            <option>Потребує ремонту</option>
+            <option>Чорнова обробка</option>
+            <option>Новобудова</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ПАРАМЕТРИ ДІЛЯНКИ -->
+      <div id="paramLand" style="display:none">
+        <div class="row2">
+          <div class="fg">
+            <label class="fl">Площа (сотих)</label>
+            <input class="finput" id="adLandArea" type="number" placeholder="10">
+          </div>
+          <div class="fg">
+            <label class="fl">Цільове призначення</label>
+            <select class="finput" id="adLandPurpose">
+              <option value="">—</option>
+              <option>Житлове будівництво</option>
+              <option>Садівництво</option>
+              <option>Сільськогосподарське</option>
+              <option>Комерційне</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ПАРАМЕТРИ КОМЕРЦІЙНОЇ -->
+      <div id="paramCommercial" style="display:none">
+        <div class="row2">
+          <div class="fg">
+            <label class="fl">Площа (м²)</label>
+            <input class="finput" id="adCommArea" type="number" placeholder="100">
+          </div>
+          <div class="fg">
+            <label class="fl">Поверх</label>
+            <input class="finput" id="adCommFloor" type="number" placeholder="1">
+          </div>
+        </div>
+      </div>
+
+      <!-- ПАРАМЕТРИ ГАРАЖУ -->
+      <div id="paramGarage" style="display:none">
+        <div class="row2">
+          <div class="fg">
+            <label class="fl">Площа (м²)</label>
+            <input class="finput" id="adGarageArea" type="number" placeholder="24">
+          </div>
+          <div class="fg">
+            <label class="fl">Тип</label>
+            <select class="finput" id="adGarageType">
+              <option value="">—</option>
+              <option>Металевий</option>
+              <option>Цегляний</option>
+              <option>В кооперативі</option>
+              <option>Підземний</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- РАЙОН -->
+      <div class="fg">
+        <label class="fl">Район міста</label>
+        <select class="finput" id="adDistrict">
+          <option value="">— Оберіть район —</option>
+          <option>Центр</option>
+          <option>Північ</option>
+          <option>Південь</option>
+          <option>Схід</option>
+          <option>Захід</option>
+          <option>Приміська зона</option>
+        </select>
+      </div>
+
+      <!-- АДРЕСА -->
+      <div class="fg">
+        <label class="fl">Вулиця (необов'язково)</label>
+        <input class="finput" id="adAddress" placeholder="вул. Шевченка, 12">
+      </div>
+
+      <!-- ЦІНА -->
+      <div class="fg">
+        <label class="fl" id="priceLbl">Ціна (грн)</label>
+        <input class="finput" id="adPrice" type="number" placeholder="1500000" min="0">
+        <div style="font-size:11px;color:var(--text-hint);margin-top:4px" id="priceHint">Для оренди вкажіть суму за місяць</div>
+      </div>
+
+      <!-- ФОТО -->
+      <div class="fg">
+        <label class="fl">Фото (до 5 штук, обов'язково)</label>
+        <input type="file" id="adPhotosInput" accept="image/*" multiple style="display:none" onchange="handlePhotos(this)">
+        <div class="photo-grid" id="photoGrid">
+          <button type="button" onclick="document.getElementById('adPhotosInput').click()" style="aspect-ratio:1;border:1.5px dashed var(--border-mid);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--text-muted);font-size:10px;font-family:sans-serif;padding:4px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Фото
+          </button>
+        </div>
+        <div style="font-size:11px;color:var(--text-hint);margin-top:4px">Перше фото буде головним</div>
+      </div>
+
+      <!-- ОПИС -->
+      <div class="fg">
+        <label class="fl">Опис</label>
+        <textarea class="finput" id="adDesc" rows="4" placeholder="Опишіть об'єкт, особливості, інфраструктуру поруч..."></textarea>
+      </div>
+
+      <!-- ТЕЛЕФОН/БАЛАНС -->
+      <div id="phoneFromAccount" style="display:none">
+        <div class="fg">
+          <label class="fl">Контактний телефон</label>
+          <div style="display:flex;align-items:center;gap:8px;padding:9px 13px;background:var(--bg);border-radius:var(--radius-sm);border:1.5px solid var(--border-mid)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" style="width:15px;height:15px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.7 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.61 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.07 6.07l.95-.88a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span id="phoneDisplay" style="font-size:13px;font-weight:600"></span>
+            <span style="font-size:11px;color:var(--text-hint);margin-left:auto">з акаунту</span>
+          </div>
+        </div>
+      </div>
+      <div id="phoneNotLogged" style="display:none">
+        <div style="padding:12px;background:var(--amber-bg);border-radius:var(--radius-sm);font-size:13px;color:var(--amber)">
+          ⚠️ Для подачі оголошення потрібно <b onclick="closeModal('addModal');openModal('loginModal')" style="cursor:pointer;text-decoration:underline">увійти</b>
+        </div>
+      </div>
+      <div id="balanceBlock" style="display:none;margin-top:1rem;padding:12px 14px;background:var(--bg);border-radius:var(--radius-sm)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:13px;color:var(--text-muted)">Ваш баланс</span>
+          <span style="font-size:15px;font-weight:700;font-family:'Unbounded',sans-serif" id="addBalance">0 грн</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-hint)">Публікація — <b id="publishPrice">50 грн</b> · активне 30 днів</div>
+        <button onclick="closeModal('addModal');openModal('topupModal')" style="margin-top:8px;padding:7px 14px;border-radius:var(--radius-sm);border:1px solid var(--border-mid);background:transparent;font-size:12px;font-weight:600;cursor:pointer;font-family:'Manrope',sans-serif;color:var(--text)">+ Поповнити рахунок</button>
+      </div>
+
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('addModal')">Скасувати</button>
+      <button class="btn btn-dark" onclick="submitAd()" id="submitBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:15px;height:15px"><polyline points="20 6 9 17 4 12"/></svg>
+        Опублікувати · <span id="submitPrice">50</span> грн
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOPUP MODAL -->
+<div class="overlay" id="topupModal" onclick="closeOverlay(event,'topupModal')">
+  <div class="modal modal-sm" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h2>Поповнити рахунок</h2>
+      <button class="close-btn" onclick="closeModal('topupModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:1rem">
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Оберіть суму поповнення:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          ${[50,100,200,500].map(n=>`<button onclick="selectTopup(${n},this)" style="padding:12px;border-radius:var(--radius-sm);border:1.5px solid var(--border-mid);background:var(--bg);font-size:15px;font-weight:700;cursor:pointer;font-family:'Unbounded',sans-serif;transition:all 0.15s">${n} грн</button>`).join('')}
+        </div>
+      </div>
+      <div style="padding:10px 14px;background:var(--amber-bg);border-radius:var(--radius-sm);font-size:12px;color:var(--amber)">
+        💳 Після вибору суми — надішліть заявку. Ми відправимо IBAN в SMS/Viber. Баланс зарахується після оплати.
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('topupModal')">Скасувати</button>
+      <button class="btn btn-dark" onclick="doTopup()">Поповнити →</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detailModal" onclick="closeOverlay(event,'detailModal')">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:480px">
+    <div class="modal-head">
+      <h2 id="detailTitle">Деталі</h2>
+      <button class="close-btn" onclick="closeModal('detailModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+  </div>
+</div>
+
+<!-- RULES MODAL -->
+<div class="overlay" id="rulesModal" onclick="closeOverlay(event,'rulesModal')">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:540px">
+    <div class="modal-head">
+      <h2>Правила користування</h2>
+      <button class="close-btn" onclick="closeModal('rulesModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+    </div>
+    <div class="modal-body" style="font-size:13px;line-height:1.7;color:var(--text-muted)">
+      <p style="margin-bottom:1rem;color:var(--text);font-weight:600">Нерухомість.Звягель — локальний майданчик купівлі, продажу та оренди нерухомості у місті Звягель.</p>
+      <div style="margin-bottom:1rem">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-hint);margin-bottom:6px">Вартість розміщення</div>
+        <div style="background:var(--bg);padding:10px 12px;border-radius:var(--radius-sm);font-size:12px">
+          <div>• Публікація — <b style="color:var(--text)" id="rulePrice">50 грн</b></div>
+          <div>• Оголошення активне — <b style="color:var(--text)">30 днів</b></div>
+          <div>• Продовження — <b style="color:var(--text)">50 грн</b> (ще 30 днів)</div>
+          <div>• Після 30 днів — неактивне ще 30 днів</div>
+          <div>• Через 60 днів — видаляється автоматично</div>
+        </div>
+      </div>
+      <div style="margin-bottom:1rem">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-hint);margin-bottom:6px">Порядок оплати</div>
+        <p>Оберіть суму → натисніть "Поповнити" → адмін надішле IBAN в SMS/Viber → оплатіть → баланс зарахується.</p>
+      </div>
+      <div style="margin-bottom:1rem">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-hint);margin-bottom:6px">Правила оголошень</div>
+        <ul style="padding-left:1.25rem;display:flex;flex-direction:column;gap:3px">
+          <li>Лише нерухомість у Звягелі та районі</li>
+          <li>Фото обов'язкове</li>
+          <li>Ціна реальна та актуальна</li>
+          <li>Заборонено дублювати оголошення</li>
+          <li>Адміністрація може видаляти оголошення без поверн. коштів</li>
+        </ul>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-dark" onclick="closeModal('rulesModal')">Зрозуміло</button></div>
+  </div>
+</div>
+
+<!-- CONTACTS MODAL -->
+<div class="overlay" id="contactsModal" onclick="closeOverlay(event,'contactsModal')">
+  <div class="modal modal-sm" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h2>Контакти</h2>
+      <button class="close-btn" onclick="closeModal('contactsModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;padding:1rem 0 1.5rem">
+        <div style="font-size:32px;margin-bottom:8px">🏠</div>
+        <div style="font-size:16px;font-weight:700">Нерухомість.Звягель</div>
+      </div>
+      <a href="mailto:shina.zvyagel@gmail.com" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg);border-radius:var(--radius-sm);text-decoration:none;color:var(--text)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--text-muted)"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <div><div style="font-size:10px;color:var(--text-hint);text-transform:uppercase;margin-bottom:1px">Email</div><div style="font-size:13px;font-weight:600;color:var(--green)">shina.zvyagel@gmail.com</div></div>
+      </a>
+    </div>
+    <div class="modal-foot"><button class="btn btn-dark" onclick="closeModal('contactsModal')">Закрити</button></div>
+  </div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div class="overlay" id="adminModal" onclick="closeOverlay(event,'adminModal')">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:620px">
+    <div class="modal-head" style="background:var(--accent);color:var(--accent-text);border-radius:var(--radius) var(--radius) 0 0">
+      <h2 style="color:var(--accent-text);display:flex;align-items:center;gap:8px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Адмін-панель · Нерухомість
+      </h2>
+      <button class="close-btn" onclick="closeModal('adminModal')" style="background:rgba(255,255,255,0.1);color:var(--accent-text)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+    </div>
+    <div style="display:flex;border-bottom:1px solid var(--border);overflow-x:auto">
+      <button id="ndTabUsersBtn" onclick="ndSwitchTab('users')" style="flex:1;padding:10px 4px;font-size:11px;font-weight:600;border:none;background:transparent;cursor:pointer;border-bottom:2px solid var(--accent);color:var(--text);font-family:'Manrope',sans-serif;white-space:nowrap">Клієнти</button>
+      <button id="ndTabTopupBtn" onclick="ndSwitchTab('topup')" style="flex:1;padding:10px 4px;font-size:11px;font-weight:600;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:var(--text-muted);font-family:'Manrope',sans-serif;white-space:nowrap">Заявки</button>
+      <button id="ndTabAdsBtn" onclick="ndSwitchTab('ads')" style="flex:1;padding:10px 4px;font-size:11px;font-weight:600;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:var(--text-muted);font-family:'Manrope',sans-serif;white-space:nowrap">Оголошення</button>
+      <button id="ndTabPricesBtn" onclick="ndSwitchTab('prices')" style="flex:1;padding:10px 4px;font-size:11px;font-weight:600;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:var(--text-muted);font-family:'Manrope',sans-serif;white-space:nowrap">💰 Ціни</button>
+      <button id="ndTabHelpBtn" onclick="ndSwitchTab('help')" style="flex:1;padding:10px 4px;font-size:11px;font-weight:600;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:var(--text-muted);font-family:'Manrope',sans-serif;white-space:nowrap">📖 Мануал</button>
+    </div>
+    <div id="ndAdminTabUsers" class="modal-body" style="padding:1rem;max-height:60vh;overflow-y:auto"><div id="ndUsersList"></div></div>
+    <div id="ndAdminTabTopup" class="modal-body" style="display:none;padding:1rem;max-height:60vh;overflow-y:auto"><div id="ndTopupList"></div></div>
+    <div id="ndAdminTabAds" class="modal-body" style="display:none;padding:1rem;max-height:60vh;overflow-y:auto"><div id="ndAdsList"></div></div>
+    <div id="ndAdminTabPrices" class="modal-body" style="display:none;padding:1rem;max-height:60vh;overflow-y:auto">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:1rem">Ціни діють одразу після збереження</div>
+      <div id="ndPricesForm"></div>
+      <button onclick="ndSavePrices()" style="width:100%;margin-top:1rem;padding:11px;border-radius:var(--radius-sm);border:none;background:var(--accent);color:var(--accent-text);font-size:14px;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif">💾 Зберегти ціни</button>
+    </div>
+    <div id="ndAdminTabHelp" class="modal-body" style="display:none;padding:1rem;max-height:60vh;overflow-y:auto;font-size:13px;line-height:1.7;color:var(--text-muted)">
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:1rem">📖 Мануал адміністратора</div>
+
+      <div style="background:var(--bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">👥 Клієнти</div>
+        <ul style="padding-left:1.1rem;display:flex;flex-direction:column;gap:3px;font-size:12px">
+          <li><b>+ Зарахувати</b> — поповнити баланс після оплати</li>
+          <li><b>🔒 Заблокувати</b> — клієнт не зможе публікувати</li>
+          <li><b>🔓 Розблокувати</b> — зняти блокування</li>
+        </ul>
+      </div>
+
+      <div style="background:#EAF4EE;border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:700;color:#0F6E56;margin-bottom:6px">💳 Як приймати оплату</div>
+        <ol style="padding-left:1.1rem;display:flex;flex-direction:column;gap:4px;color:#0F6E56;font-size:12px">
+          <li>Клієнт обирає суму → натискає "Поповнити"</li>
+          <li>На пошту <b>ckbbuild@gmail.com</b> приходить заявка</li>
+          <li>Ви надсилаєте IBAN в SMS/Viber клієнту</li>
+          <li>Клієнт оплачує → ви заходите в <b>Заявки</b></li>
+          <li>Знаходите заявку → натискаєте <b>"Зарахувати"</b></li>
+          <li>Баланс клієнта збільшується автоматично</li>
+        </ol>
+        <div style="margin-top:8px;padding:6px 10px;background:rgba(46,110,71,0.1);border-radius:6px;font-size:11px;color:#3B6D11">⚠️ Не зараховуйте до отримання реальної оплати!</div>
+      </div>
+
+      <div style="background:var(--bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">💰 Ціни</div>
+        <ul style="padding-left:1.1rem;display:flex;flex-direction:column;gap:3px;font-size:12px">
+          <li><b>publish</b> — вартість публікації оголошення</li>
+          <li><b>renew</b> — вартість продовження після 30 днів</li>
+          <li><b>active_days</b> — скільки днів активне (за замовч. 30)</li>
+          <li><b>inactive_days</b> — скільки днів зберігається неактивне</li>
+        </ul>
+      </div>
+
+      <div style="background:var(--amber-bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:6px">🔐 Вхід в адмінку</div>
+        <ul style="padding-left:1.1rem;font-size:12px;color:var(--amber);display:flex;flex-direction:column;gap:3px">
+          <li>Кнопка "🛡 Адмін" в нижньому правому куті футера</li>
+          <li>Пароль змінюється в коді (рядок ADMIN_PASS_ND)</li>
+        </ul>
+      </div>
+      <div style="font-size:11px;color:var(--text-hint);text-align:center;padding-top:4px">Нерухомість.Звягель · 2026</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ КАТЕГОРІЇ ═══
+const CAT_LABELS={
+  apartment:'Квартира',house:'Будинок',
+  land_build:'Ділянка під будівництво',land_agri:'Земельна ділянка',
+  commercial_office:'Офіс',commercial_shop:'Магазин',commercial_warehouse:'Склад',
+  garage:'Гараж',parking:'Паркомісце'
+};
+
+const ROOMS_CATS=['apartment','house'];
+const LAND_CATS=['land_build','land_agri'];
+const COMM_CATS=['commercial_office','commercial_shop','commercial_warehouse'];
+const GARAGE_CATS=['garage','parking'];
+
+function getCatGroup(cat){
+  if(ROOMS_CATS.includes(cat))return'apartment';
+  if(cat==='house')return'house';
+  if(LAND_CATS.includes(cat))return'land';
+  if(COMM_CATS.includes(cat))return'commercial';
+  if(GARAGE_CATS.includes(cat))return'garage';
+  return'all';
+}
+
+function onAdCatChange(){
+  const cat=document.getElementById('adCatSel').value;
+  document.getElementById('paramRooms').style.display=ROOMS_CATS.includes(cat)?'block':'none';
+  document.getElementById('paramLand').style.display=LAND_CATS.includes(cat)?'block':'none';
+  document.getElementById('paramCommercial').style.display=COMM_CATS.includes(cat)?'block':'none';
+  document.getElementById('paramGarage').style.display=GARAGE_CATS.includes(cat)?'block':'none';
+  if(cat==='land_build'||cat==='land_agri'){
+    document.getElementById('priceLbl').textContent='Ціна (грн)';
+    document.getElementById('priceHint').textContent='Вартість ділянки';
+  }
+}
+
+// ═══ FIREBASE AUTH ═══
+let currentUser=null;
+let DB=[];
+let filters={cat:'all',deal:'all',rooms:'all'};
+let favs=new Set();
+let adPhotos=[];
+let adDeal='sell';
+let _topupAmt=0;
+
+auth.onAuthStateChanged(async fbUser=>{
+  if(fbUser){
+    const snap=await db.collection('nd_users').doc(fbUser.uid).get();
+    if(snap.exists)currentUser={uid:fbUser.uid,...snap.data()};
+    else currentUser={uid:fbUser.uid,name:'Користувач',phone:'',balance:0};
+    updateHeaderAuth();
+    prepareAddModal();
+  }else{currentUser=null;updateHeaderAuth();}
+});
+
+function updateHeaderAuth(){
+  const btn=document.getElementById('authBtn');
+  if(!btn)return;
+  if(currentUser){
+    const bal=(currentUser.balance||0).toLocaleString('uk-UA');
+    btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg> ${currentUser.name} · ${bal} грн`;
+    btn.onclick=()=>{if(confirm('Вийти?')){auth.signOut();toast('Вийшли');}};
+  }else{
+    btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg> Увійти`;
+    btn.onclick=()=>openModal('loginModal');
+  }
+}
+
+function switchAuthTab(tab){
+  document.getElementById('tabLogin').style.display=tab==='login'?'block':'none';
+  document.getElementById('tabReg').style.display=tab==='reg'?'block':'none';
+  document.getElementById('loginTitle').textContent=tab==='login'?'Увійти':'Реєстрація';
+}
+
+async function doLogin(){
+  const phone=document.getElementById('loginPhone').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  if(!phone){toast('Введіть телефон');return;}
+  const fakeEmail=phone.replace(/\D/g,'')+`@nd.zvyagel`;
+  try{await auth.signInWithEmailAndPassword(fakeEmail,pass);closeModal('loginModal');toast('Ласкаво просимо!');}
+  catch(e){toast('Невірний телефон або пароль');}
+}
+
+async function doRegister(){
+  const name=document.getElementById('regName').value.trim();
+  const phone=document.getElementById('regPhone').value.trim();
+  const pass=document.getElementById('regPass').value;
+  if(!name){toast('Введіть ім\'я');return;}
+  if(!phone||phone.length<10){toast('Введіть правильний телефон');return;}
+  if(!pass||pass.length<6){toast('Пароль мінімум 6 символів');return;}
+  const fakeEmail=phone.replace(/\D/g,'')+`@nd.zvyagel`;
+  try{
+    const cred=await auth.createUserWithEmailAndPassword(fakeEmail,pass);
+    await db.collection('nd_users').doc(cred.user.uid).set({name,phone,balance:0,blocked:false,createdAt:Date.now()});
+    closeModal('loginModal');
+    toast('Акаунт створено! Ласкаво просимо, '+name+'!');
+  }catch(e){
+    if(e.code==='auth/email-already-in-use')toast('Цей телефон вже зареєстровано');
+    else toast('Помилка: '+e.message);
+  }
+}
+
+function setDeal(d){
+  adDeal=d;
+  document.getElementById('dealSellBtn').className='btn '+(d==='sell'?'btn-dark':'btn-outline');
+  document.getElementById('dealRentBtn').className='btn '+(d==='rent'?'btn-dark':'btn-outline');
+  document.getElementById('priceHint').textContent=d==='rent'?'Вкажіть суму за місяць':'Вартість об\'єкта';
+}
+
+function updateBalanceUI(){
+  const el=document.getElementById('addBalance');
+  if(el&&currentUser)el.textContent=(currentUser.balance||0).toLocaleString('uk-UA')+' грн';
+}
+
+function prepareAddModal(){
+  const fromAcc=document.getElementById('phoneFromAccount');
+  const notLogged=document.getElementById('phoneNotLogged');
+  const balBlock=document.getElementById('balanceBlock');
+  if(currentUser){
+    fromAcc.style.display='flex';
+    notLogged.style.display='none';
+    balBlock.style.display='block';
+    document.getElementById('phoneDisplay').textContent=currentUser.phone;
+    updateBalanceUI();
+    document.getElementById('publishPrice').textContent=ND_PRICES.publish+' грн';
+    document.getElementById('submitPrice').textContent=ND_PRICES.publish;
+  }else{
+    fromAcc.style.display='none';
+    notLogged.style.display='flex';
+    balBlock.style.display='none';
+  }
+}
+
+// ═══ ФОТО ═══
+function compressPhoto(file,maxW=800,quality=0.75){
+  return new Promise(res=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement('canvas');
+        let w=img.width,h=img.height;
+        if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        res(canvas.toDataURL('image/jpeg',quality));
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handlePhotos(input){
+  const files=Array.from(input.files);
+  const toAdd=files.slice(0,5-adPhotos.length);
+  for(const f of toAdd){const c=await compressPhoto(f);adPhotos.push(c);renderPhotoGrid();}
+  input.value='';
+}
+
+function renderPhotoGrid(){
+  const grid=document.getElementById('photoGrid');
+  let html=adPhotos.map((src,i)=>`
+    <div class="photo-thumb"><img src="${src}">
+      ${i===0?'<span class="photo-main-badge">ГОЛОВНЕ</span>':''}
+      <button class="photo-del" onclick="removePhoto(${i})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+    </div>`).join('');
+  if(adPhotos.length<5)html+=`<button type="button" onclick="document.getElementById('adPhotosInput').click()" style="aspect-ratio:1;border:1.5px dashed var(--border-mid);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--text-muted);font-size:10px;font-family:sans-serif;padding:4px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Додати</button>`;
+  grid.innerHTML=html;
+}
+
+function removePhoto(i){adPhotos.splice(i,1);renderPhotoGrid();}
+
+// ═══ SUBMIT ═══
+async function submitAd(){
+  if(!currentUser){toast('Спочатку увійдіть');openModal('loginModal');return;}
+  const cat=document.getElementById('adCatSel').value;
+  if(!cat){toast('Оберіть категорію');return;}
+  if(!adPhotos.length){toast('Додайте хоча б одне фото');return;}
+  const price=parseInt(document.getElementById('adPrice').value)||0;
+  if(!price){toast('Вкажіть ціну');return;}
+  if((currentUser.balance||0)<ND_PRICES.publish){
+    toast('Недостатньо коштів. Потрібно '+ND_PRICES.publish+' грн');
+    openModal('topupModal');return;
+  }
+  const desc=document.getElementById('adDesc').value.trim();
+  const district=document.getElementById('adDistrict').value;
+  const address=document.getElementById('adAddress').value.trim();
+  const params={};
+  if(ROOMS_CATS.includes(cat)){
+    params.rooms=document.getElementById('adRooms').value;
+    params.floor=document.getElementById('adFloor').value;
+    params.floors=document.getElementById('adFloors').value;
+    params.area=document.getElementById('adArea').value;
+    params.livingArea=document.getElementById('adLivingArea').value;
+    params.condition=document.getElementById('adCondition').value;
+  }
+  if(LAND_CATS.includes(cat)){
+    params.landArea=document.getElementById('adLandArea').value;
+    params.landPurpose=document.getElementById('adLandPurpose').value;
+  }
+  if(COMM_CATS.includes(cat)){
+    params.area=document.getElementById('adCommArea').value;
+    params.floor=document.getElementById('adCommFloor').value;
+  }
+  if(GARAGE_CATS.includes(cat)){
+    params.area=document.getElementById('adGarageArea').value;
+    params.garageType=document.getElementById('adGarageType').value;
+  }
+  const title=buildTitle(cat,params,adDeal);
+  currentUser.balance-=ND_PRICES.publish;
+  await db.collection('nd_users').doc(currentUser.uid).update({balance:currentUser.balance});
+  const now=Date.now();
+  try{
+    await db.collection('nd_listings').add({
+      cat,title,deal:adDeal,price,district,address,desc,params,
+      photos:[...adPhotos],city:'Звягель',
+      phone:currentUser.phone,uid:currentUser.uid,
+      status:'active',date:now,
+      expiresAt:now+ND_PRICES.active_days*86400000,
+      deleteAt:now+(ND_PRICES.active_days+ND_PRICES.inactive_days)*86400000
+    });
+    closeModal('addModal');
+    document.getElementById('adCatSel').value='';
+    document.getElementById('adPrice').value='';
+    document.getElementById('adDesc').value='';
+    document.getElementById('adAddress').value='';
+    adPhotos=[];renderPhotoGrid();onAdCatChange();
+    updateBalanceUI();updateHeaderAuth();
+    await loadListings();
+    toast('Оголошення опубліковано!');
+  }catch(e){
+    currentUser.balance+=ND_PRICES.publish;
+    toast('Помилка: '+e.message);
+  }
+}
+
+function buildTitle(cat,params,deal){
+  let t=CAT_LABELS[cat]||cat;
+  if(params.rooms)t=params.rooms+'-кімн. '+t;
+  if(params.area)t+=', '+params.area+' м²';
+  if(params.landArea)t+=', '+params.landArea+' сот.';
+  if(deal==='rent')t+=' (оренда)';
+  return t;
+}
+
+// ═══ ПОПОВНЕННЯ ═══
+function selectTopup(n,btn){
+  _topupAmt=n;
+  document.querySelectorAll('#topupModal button[onclick^="selectTopup"]').forEach(b=>{
+    b.style.background=b===btn?'var(--accent)':'var(--bg)';
+    b.style.color=b===btn?'var(--accent-text)':'var(--text)';
+    b.style.borderColor=b===btn?'var(--accent)':'var(--border-mid)';
+  });
+}
+
+async function doTopup(){
+  if(!_topupAmt){toast('Оберіть суму');return;}
+  if(!currentUser){toast('Увійдіть в акаунт');return;}
+  try{
+    await db.collection('nd_topup').add({
+      uid:currentUser.uid,name:currentUser.name,phone:currentUser.phone,
+      amt:_topupAmt,date:new Date().toLocaleString('uk-UA'),
+      status:'pending',createdAt:Date.now()
+    });
+  }catch(e){console.error(e);}
+  const subj=encodeURIComponent('Поповнення Нерухомість.Звягель');
+  const body=encodeURIComponent('Ім\'я: '+currentUser.name+'\nТелефон: '+currentUser.phone+'\nСума: '+_topupAmt+' грн');
+  window.open('mailto:ckbbuild@gmail.com?subject='+subj+'&body='+body);
+  closeModal('topupModal');
+  toast('Заявку відправлено! Очікуйте IBAN в SMS/Viber');
+}
+
+// ═══ ЗАВАНТАЖЕННЯ ═══
+async function loadListings(){
+  document.getElementById('resultCount').innerHTML='Завантаження...';
+  try{
+    const snap=await db.collection('nd_listings').orderBy('date','desc').limit(200).get();
+    DB=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const now=Date.now();
+    DB=DB.filter(l=>{
+      if(l.status==='active'&&l.expiresAt&&now>l.expiresAt){
+        db.collection('nd_listings').doc(l.id).update({status:'inactive'}).catch(()=>{});
+        l.status='inactive';
+      }
+      return!(l.deleteAt&&now>l.deleteAt);
+    });
+    filterCards();
+  }catch(e){DB=[];filterCards();}
+  return true;
+}
+
+// ═══ ФІЛЬТРИ ═══
+function setFilter(f,v,btn){
+  filters[f]=v;
+  document.querySelectorAll(`.chip[data-f="${f}"]`).forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  filterCards();
+}
+
+function setCat(c){
+  filters.cat=c;
+  const map={catAllBtn:'all',catApartBtn:'apartment',catHouseBtn:'house',catLandBtn:'land',catCommBtn:'commercial',catGarageBtn:'garage'};
+  Object.entries(map).forEach(([id,val])=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.className='btn '+(val===c?'btn-white':'btn-ghost');
+    if(val!==c)el.style.borderColor='rgba(245,243,238,0.25)';
+    else el.style.borderColor='';
+  });
+  document.querySelectorAll('.chip[data-f="cat"]').forEach(b=>b.classList.toggle('on',b.dataset.v===c));
+  filterCards();
+}
+
+function filterCards(){
+  const q=document.getElementById('searchInput').value.toLowerCase().trim();
+  const district=document.getElementById('districtFilter').value;
+  const priceMin=parseInt(document.getElementById('priceMin').value)||0;
+  const priceMax=parseInt(document.getElementById('priceMax').value)||Infinity;
+
+  let data=DB.filter(l=>{
+    if(l.status!=='active')return false;
+    if(filters.cat!=='all'){
+      const grp=getCatGroup(l.cat);
+      if(filters.cat==='land'&&!LAND_CATS.includes(l.cat))return false;
+      if(filters.cat==='commercial'&&!COMM_CATS.includes(l.cat))return false;
+      if(filters.cat==='garage'&&!GARAGE_CATS.includes(l.cat))return false;
+      if(filters.cat==='apartment'&&l.cat!=='apartment')return false;
+      if(filters.cat==='house'&&l.cat!=='house')return false;
+    }
+    if(filters.deal!=='all'&&l.deal!==filters.deal)return false;
+    if(filters.rooms!=='all'&&l.params?.rooms!==filters.rooms)return false;
+    if(district&&l.district!==district)return false;
+    if(l.price<priceMin||l.price>priceMax)return false;
+    if(q){
+      const s=((l.title||'')+' '+(l.desc||'')+' '+(l.district||'')+' '+(l.address||'')).toLowerCase();
+      if(!s.includes(q))return false;
+    }
+    return true;
+  });
+
+  const sort=document.getElementById('sortSel').value;
+  if(sort==='cheap')data.sort((a,b)=>a.price-b.price);
+  else if(sort==='expensive')data.sort((a,b)=>b.price-a.price);
+  else if(sort==='area')data.sort((a,b)=>(parseInt(b.params?.area)||0)-(parseInt(a.params?.area)||0));
+  else data.sort((a,b)=>b.date-a.date);
+
+  renderCards(data);
+  updateStats();
+  saveState();
+}
+
+function resetFilters(){
+  filters={cat:'all',deal:'all',rooms:'all'};
+  document.getElementById('searchInput').value='';
+  document.getElementById('districtFilter').value='';
+  document.getElementById('priceMin').value='';
+  document.getElementById('priceMax').value='';
+  document.getElementById('sortSel').value='newest';
+  document.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',b.dataset.v==='all'));
+  setCat('all');
+  filterCards();
+}
+
+function updateStats(){
+  const active=DB.filter(l=>l.status==='active');
+  document.getElementById('resultCount').innerHTML=`<b>${active.length}</b> оголошень`;
+  document.getElementById('statSell').innerHTML=`<b>${active.filter(l=>l.deal==='sell').length}</b> продаж`;
+  document.getElementById('statRent').innerHTML=`<b>${active.filter(l=>l.deal==='rent').length}</b> оренда`;
+  document.getElementById('resultCountMain').innerHTML=`Знайдено: <b>${document.querySelectorAll('#cardsGrid .card').length}</b> оголошень`;
+}
+
+function timeAgo(ts){
+  const d=Math.floor((Date.now()-ts)/86400000);
+  if(d===0)return'Сьогодні';if(d===1)return'Вчора';
+  if(d<7)return d+'д. тому';return Math.floor(d/7)+'тиж. тому';
+}
+
+function renderCards(data){
+  const g=document.getElementById('cardsGrid');
+  if(!data||!data.length){
+    g.innerHTML=`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><p>Нічого не знайдено</p><span>Спробуйте змінити фільтри або пошуковий запит</span></div>`;
+    return;
+  }
+  g.innerHTML=data.map(l=>{
+    const isRent=l.deal==='rent';
+    const isFav=favs.has(l.id);
+    const isOwn=currentUser&&currentUser.uid===l.uid;
+    const isInactive=(l.status||'active')==='inactive';
+    const tags=[];
+    if(l.params?.rooms)tags.push(l.params.rooms+' кімн.');
+    if(l.params?.area)tags.push(l.params.area+' м²');
+    if(l.params?.landArea)tags.push(l.params.landArea+' сот.');
+    if(l.params?.condition)tags.push(l.params.condition);
+    if(l.district)tags.push(l.district);
+    return`<div class="card" onclick="openDetail('${l.id}')">
+      <div class="card-thumb">
+        ${l.photos&&l.photos[0]?`<img src="${l.photos[0]}" loading="lazy">`:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`}
+        ${isInactive?`<div style="position:absolute;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center"><span style="font-size:10px;font-weight:700;color:#fff;background:rgba(163,48,29,0.9);padding:3px 8px;border-radius:20px">НЕАКТИВНЕ</span></div>`:''}
+        <div class="badges">
+          <span class="badge ${isRent?'badge-rent':'badge-sell'}">${isRent?'Оренда':'Продаж'}</span>
+          ${l.cat==='apartment'?'<span class="badge" style="background:#f0f0f0;color:#555">'+CAT_LABELS[l.cat]+'</span>':''}
+        </div>
+        <button class="fav-btn ${isFav?'active':''}" onclick="event.stopPropagation();toggleFav('${l.id}',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="card-name">${l.title||CAT_LABELS[l.cat]||l.cat}</div>
+        <div class="card-sub">${tags.map(t=>`<span>${t}</span>`).join('')}</div>
+        <div class="card-price">${l.price?l.price.toLocaleString('uk-UA')+' грн':'Договірна'}</div>
+        <div class="card-price-sub">${isRent?'/ місяць':''}</div>
+        <div class="card-footer">
+          <div class="card-city"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${l.district||l.city||'Звягель'}</div>
+          <div style="font-size:11px;color:var(--text-hint)">${timeAgo(l.date)}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleFav(id,btn){
+  if(favs.has(id)){favs.delete(id);btn.classList.remove('active');}
+  else{favs.add(id);btn.classList.add('active');}
+  toast(favs.has(id)?'Додано в обране':'Видалено з обраного');
+}
+
+function openDetail(id){
+  const l=DB.find(x=>x.id===id);
+  if(!l)return;
+  document.getElementById('detailTitle').textContent=l.title||CAT_LABELS[l.cat]||'';
+  const isRent=l.deal==='rent';
+  const photos=l.photos&&l.photos.length?`<div style="display:flex;gap:6px;overflow-x:auto;margin-bottom:1rem">${l.photos.map(s=>`<img src="${s}" style="height:180px;border-radius:8px;flex-shrink:0;object-fit:cover">`).join('')}</div>`:'';
+  const params=[];
+  if(l.params?.rooms)params.push({l:'Кімнат',v:l.params.rooms});
+  if(l.params?.area)params.push({l:'Площа заг.',v:l.params.area+' м²'});
+  if(l.params?.livingArea)params.push({l:'Площа жит.',v:l.params.livingArea+' м²'});
+  if(l.params?.floor)params.push({l:'Поверх',v:l.params.floor+(l.params.floors?'/'+l.params.floors:'')});
+  if(l.params?.condition)params.push({l:'Стан',v:l.params.condition});
+  if(l.params?.landArea)params.push({l:'Площа',v:l.params.landArea+' сот.'});
+  if(l.params?.landPurpose)params.push({l:'Призначення',v:l.params.landPurpose});
+  if(l.params?.garageType)params.push({l:'Тип гаражу',v:l.params.garageType});
+  if(l.district)params.push({l:'Район',v:l.district});
+  if(l.address)params.push({l:'Адреса',v:l.address});
+  const needRenew=l.status==='inactive'&&currentUser&&currentUser.uid===l.uid;
+  document.getElementById('detailBody').innerHTML=`
+    ${photos}
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${isRent?'var(--blue-bg)':'var(--green-bg)'};color:${isRent?'var(--blue)':'var(--green)'}">${isRent?'Оренда':'Продаж'}</span>
+      <span style="font-size:12px;color:var(--text-muted)">${CAT_LABELS[l.cat]||l.cat}</span>
+    </div>
+    <div class="detail-price">${l.price?l.price.toLocaleString('uk-UA')+' грн':'Договірна'}</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:1rem">${isRent?'за місяць':''}</div>
+    <div class="detail-stats">${params.map(p=>`<div class="ds-item"><div class="ds-label">${p.l}</div><div class="ds-val">${p.v}</div></div>`).join('')}</div>
+    ${l.desc?`<div style="font-size:13px;color:var(--text-muted);background:var(--bg);padding:10px 13px;border-radius:var(--radius-sm);line-height:1.6;margin-bottom:1rem">${l.desc}</div>`:''}
+    ${needRenew?`<div style="padding:12px;background:var(--amber-bg);border-radius:var(--radius-sm);margin-bottom:12px">
+      <div style="font-size:12px;color:var(--amber);margin-bottom:8px">⚠️ Оголошення неактивне. Продовжіть щоб воно знову з'явилось.</div>
+      <button onclick="ndRenewListing('${l.id}')" style="width:100%;padding:10px;border-radius:var(--radius-sm);border:none;background:var(--accent);color:var(--accent-text);font-size:13px;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif">Продовжити · ${ND_PRICES.renew} грн</button>
+    </div>`:''}
+    <button class="phone-btn" onclick="toast('Телефон: ${l.phone}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.7 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.61 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.07 6.07l.95-.88a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      ${l.phone}
+    </button>`;
+  openModal('detailModal');
+}
+
+async function ndRenewListing(id){
+  if(!currentUser){toast('Увійдіть в акаунт');return;}
+  if((currentUser.balance||0)<ND_PRICES.renew){toast('Недостатньо коштів');openModal('topupModal');return;}
+  try{
+    const now=Date.now();
+    await db.collection('nd_listings').doc(id).update({
+      status:'active',
+      expiresAt:now+ND_PRICES.active_days*86400000,
+      deleteAt:now+(ND_PRICES.active_days+ND_PRICES.inactive_days)*86400000
+    });
+    currentUser.balance-=ND_PRICES.renew;
+    await db.collection('nd_users').doc(currentUser.uid).update({balance:currentUser.balance});
+    updateBalanceUI();updateHeaderAuth();
+    closeModal('detailModal');
+    await loadListings();
+    toast('Оголошення продовжено на '+ND_PRICES.active_days+' днів!');
+  }catch(e){toast('Помилка: '+e.message);}
+}
+
+// ═══ АВТОДОПОВНЕННЯ ═══
+let _acTimer;
+function onSearchInput(val){
+  filterCards();
+  clearTimeout(_acTimer);
+  if(val.trim().length<3){hideAC();return;}
+  _acTimer=setTimeout(()=>showAC(val.trim().toLowerCase()),200);
+}
+function showAC(q){
+  const matches=DB.filter(l=>l.status==='active'&&((l.title||'').toLowerCase().includes(q)||(l.district||'').toLowerCase().includes(q)||(l.desc||'').toLowerCase().includes(q)));
+  if(!matches.length){hideAC();return;}
+  const list=document.getElementById('autocompleteList');
+  list.innerHTML=matches.slice(0,5).map(l=>`
+    <div onmousedown="document.getElementById('searchInput').value='${(l.title||'').replace(/'/g,"\\'")}';hideAC();openDetail('${l.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f0f0f0">
+      <div style="font-size:13px;font-weight:600;color:#1a1917">${l.title||CAT_LABELS[l.cat]}</div>
+      <div style="font-size:11px;color:#aaa">${l.district||'Звягель'} · ${l.deal==='rent'?'Оренда':'Продаж'} · ${l.price?l.price.toLocaleString('uk-UA')+' грн':''}</div>
+    </div>`).join('');
+  list.style.display='block';
+}
+function hideAC(){const l=document.getElementById('autocompleteList');if(l)l.style.display='none';}
+document.addEventListener('click',e=>{
+  const inp=document.getElementById('searchInput');
+  const list=document.getElementById('autocompleteList');
+  if(inp&&list&&!inp.contains(e.target)&&!list.contains(e.target))hideAC();
+});
+
+// ═══ МОДАЛКИ ═══
+function openModal(id){document.getElementById(id).classList.add('open');if(id==='addModal')prepareAddModal();}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function closeOverlay(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+
+// ═══ TOAST ═══
+let _tTimer;
+function toast(msg){
+  const el=document.getElementById('toastEl');
+  document.getElementById('toastMsg').textContent=msg;
+  el.classList.add('show');
+  clearTimeout(_tTimer);
+  _tTimer=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// ═══ POPUP ═══
+let _popupTimer;
+function closePopup(){
+  document.getElementById('popupBanner').style.display='none';
+  clearTimeout(_popupTimer);
+  _popupTimer=setTimeout(()=>document.getElementById('popupBanner').style.display='flex',5*60*1000);
+}
+setTimeout(()=>document.getElementById('popupBanner').style.display='flex',3000);
+
+// ═══ СТАН ═══
+function saveState(){
+  try{
+    localStorage.setItem('nd_filters',JSON.stringify(filters));
+    localStorage.setItem('nd_search',document.getElementById('searchInput').value||'');
+    localStorage.setItem('nd_sort',document.getElementById('sortSel').value||'newest');
+  }catch(e){}
+}
+window.addEventListener('scroll',()=>{try{localStorage.setItem('nd_scroll',Math.round(window.scrollY));}catch(e){}},{passive:true});
+
+function restoreState(){
+  try{
+    const f=window._savedFilters||{};
+    filters={...filters,...f};
+    const si=document.getElementById('searchInput');
+    if(si&&window._savedSearch)si.value=window._savedSearch;
+    const ss=document.getElementById('sortSel');
+    if(ss&&window._savedSort)ss.value=window._savedSort;
+    document.querySelectorAll('.chip[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.v===filters[b.dataset.f]));
+    setCat(filters.cat||'all');
+  }catch(e){}
+}
+
+function restoreScroll(){
+  const y=window._savedScroll||0;
+  if(y>50)setTimeout(()=>window.scrollTo({top:y,behavior:'instant'}),600);
+}
+
+// ═══ АДМІН ═══
+const ADMIN_PASS_ND='admin123456';
+
+function openAdminModal(){
+  const p=prompt('Пароль:');
+  if(p===ADMIN_PASS_ND){openModal('adminModal');ndSwitchTab('users');}
+  else if(p!==null)toast('Невірний пароль');
+}
+
+function ndSwitchTab(tab){
+  ['users','topup','ads','prices','help'].forEach(t=>{
+    const el=document.getElementById('ndAdminTab'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(el)el.style.display=t===tab?'block':'none';
+    const btn=document.getElementById('ndTab'+t.charAt(0).toUpperCase()+t.slice(1)+'Btn');
+    if(btn){btn.style.borderBottomColor=t===tab?'var(--accent)':'transparent';btn.style.color=t===tab?'var(--text)':'var(--text-muted)';}
+  });
+  if(tab==='users')ndRenderUsers();
+  if(tab==='topup')ndRenderTopup();
+  if(tab==='ads')ndRenderAds();
+  if(tab==='prices')ndRenderPrices();
+}
+
+async function ndRenderUsers(){
+  const el=document.getElementById('ndUsersList');
+  el.innerHTML='<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:13px">Завантаження...</div>';
+  try{
+    const snap=await db.collection('nd_users').get();
+    const users=snap.docs.map(d=>({uid:d.id,...d.data()}));
+    if(!users.length){el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text-muted)">Немає клієнтів</div>';return;}
+    el.innerHTML=users.map(u=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;background:var(--bg-card)">
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;color:var(--text-muted)">${(u.name||'?').charAt(0).toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600">${u.name||'—'} ${u.blocked?'<span style="font-size:10px;color:var(--red);font-weight:700">ЗАБЛОКОВАНО</span>':''}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${u.phone||'—'} · ${(u.balance||0)} грн</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <button onclick="ndTopupUser('${u.uid}','${u.name||''}')" style="padding:5px 10px;border-radius:var(--radius-sm);border:1px solid var(--green);background:var(--green-bg);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif;white-space:nowrap">+ Зарахувати</button>
+          <button onclick="ndToggleBlock('${u.uid}',${!!u.blocked})" style="padding:5px 10px;border-radius:var(--radius-sm);border:1px solid ${u.blocked?'var(--amber)':'var(--red)'};background:${u.blocked?'var(--amber-bg)':'var(--red-bg)'};color:${u.blocked?'var(--amber)':'var(--red)'};font-size:11px;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif;white-space:nowrap">${u.blocked?'🔓 Розблок.':'🔒 Заблок.'}</button>
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<div style="color:var(--red);padding:1rem">Помилка: '+e.message+'</div>';}
+}
+
+async function ndTopupUser(uid,name){
+  const amt=prompt('Сума зарахування для '+name+' (грн):');
+  if(!amt||isNaN(+amt)||+amt<=0)return;
+  try{
+    const snap=await db.collection('nd_users').doc(uid).get();
+    const bal=(snap.data().balance||0)+(+amt);
+    await db.collection('nd_users').doc(uid).update({balance:bal});
+    if(currentUser&&currentUser.uid===uid){currentUser.balance=bal;updateBalanceUI();updateHeaderAuth();}
+    ndRenderUsers();
+    toast('Зараховано '+amt+' грн для '+name);
+  }catch(e){toast('Помилка: '+e.message);}
+}
+
+async function ndToggleBlock(uid,isBlocked){
+  if(!isBlocked&&!confirm('Заблокувати клієнта?'))return;
+  try{
+    await db.collection('nd_users').doc(uid).update({blocked:!isBlocked});
+    ndRenderUsers();
+    toast(isBlocked?'Розблоковано':'Заблоковано');
+  }catch(e){toast('Помилка: '+e.message);}
+}
+
+async function ndRenderTopup(){
+  const el=document.getElementById('ndTopupList');
+  el.innerHTML='<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:13px">Завантаження...</div>';
+  try{
+    const snap=await db.collection('nd_topup').orderBy('createdAt','desc').get();
+    const reqs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!reqs.length){el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text-muted)">Заявок немає</div>';return;}
+    el.innerHTML=reqs.map(r=>`
+      <div style="padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;background:${r.status==='done'?'var(--green-bg)':'var(--bg-card)'}">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div><span style="font-size:13px;font-weight:600">${r.name}</span><span style="font-size:12px;color:var(--text-muted);margin-left:6px">${r.phone}</span></div>
+          <span style="font-size:16px;font-weight:700;font-family:'Unbounded',sans-serif">${r.amt} грн</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:11px;color:var(--text-hint)">${r.date}</span>
+          ${r.status==='done'?'<span style="font-size:11px;color:var(--green);font-weight:700">✓ Зараховано</span>':`<button onclick="ndConfirmTopup('${r.id}','${r.uid}',${r.amt},'${r.name}')" style="padding:5px 12px;border-radius:var(--radius-sm);border:none;background:var(--accent);color:var(--accent-text);font-size:12px;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif">Зарахувати</button>`}
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<div style="color:var(--red);padding:1rem">Помилка: '+e.message+'</div>';}
+}
+
+async function ndConfirmTopup(reqId,uid,amt,name){
+  try{
+    const snap=await db.collection('nd_users').doc(uid).get();
+    const bal=(snap.data().balance||0)+amt;
+    await db.collection('nd_users').doc(uid).update({balance:bal});
+    await db.collection('nd_topup').doc(reqId).update({status:'done'});
+    if(currentUser&&currentUser.uid===uid){currentUser.balance=bal;updateBalanceUI();updateHeaderAuth();}
+    ndRenderTopup();
+    toast('Зараховано '+amt+' грн для '+name);
+  }catch(e){toast('Помилка: '+e.message);}
+}
+
+async function ndRenderAds(){
+  const el=document.getElementById('ndAdsList');
+  el.innerHTML='<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:13px">Завантаження...</div>';
+  try{
+    const snap=await db.collection('nd_listings').orderBy('date','desc').get();
+    const ads=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!ads.length){el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text-muted)">Оголошень немає</div>';return;}
+    el.innerHTML=ads.map(l=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;background:var(--bg-card)">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.title||CAT_LABELS[l.cat]||l.cat}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${l.deal==='rent'?'Оренда':'Продаж'} · ${l.price?l.price.toLocaleString('uk-UA')+' грн':''} · ${l.district||'Звягель'}</div>
+        </div>
+        <button onclick="ndDeleteAd('${l.id}')" style="padding:5px 10px;border-radius:var(--radius-sm);border:1px solid var(--red);background:var(--red-bg);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif;flex-shrink:0">Видалити</button>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<div style="color:var(--red);padding:1rem">Помилка: '+e.message+'</div>';}
+}
+
+async function ndDeleteAd(id){
+  if(!confirm('Видалити оголошення?'))return;
+  try{
+    await db.collection('nd_listings').doc(id).delete();
+    await loadListings();ndRenderAds();
+    toast('Видалено');
+  }catch(e){toast('Помилка: '+e.message);}
+}
+
+function ndRenderPrices(){
+  const labels={publish:'Публікація (грн)',renew:'Продовження (грн)',active_days:'Активне (днів)',inactive_days:'Неактивне перед видаленням (днів)'};
+  document.getElementById('ndPricesForm').innerHTML=Object.entries(labels).map(([k,l])=>`
+    <div style="margin-bottom:10px">
+      <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin-bottom:4px">${l}</label>
+      <input type="number" id="ndprice_${k}" value="${ND_PRICES[k]||0}" min="0" class="finput" style="font-weight:600;font-size:14px">
+    </div>`).join('');
+}
+
+async function ndSavePrices(){
+  const keys=['publish','renew','active_days','inactive_days'];
+  const p={};
+  keys.forEach(k=>{const el=document.getElementById('ndprice_'+k);if(el)p[k]=parseInt(el.value)||0;});
+  try{
+    await db.collection('nd_config').doc('prices').set(p);
+    ND_PRICES={...ND_PRICES,...p};
+    toast('✅ Ціни збережено!');
+  }catch(e){toast('Помилка: '+e.message);}
+}
+
+// ═══ ІНІЦІАЛІЗАЦІЯ ═══
+restoreState();
+loadListings().then(()=>restoreScroll());
+updateHeaderAuth();
+document.querySelectorAll('.overlay').forEach(el=>{
+  el.addEventListener('click',function(e){if(e.target===this)closeModal(this.id);});
+});
+</script>
+</body>
+</html>
