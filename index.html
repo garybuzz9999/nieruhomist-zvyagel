@@ -34,8 +34,8 @@
 </script>
 <script>
 let ND_PRICES={
-  publish:50,
-  renew:50,
+  publish:0,
+  renew:0,
   active_days:30,
   inactive_days:30,
 };
@@ -560,7 +560,7 @@ loadNDPrices();
           ⚠️ Для подачі оголошення потрібно <b onclick="closeModal('addModal');openModal('loginModal')" style="cursor:pointer;text-decoration:underline">увійти</b>
         </div>
       </div>
-      <div id="balanceBlock" style="display:none;margin-top:1rem;padding:12px 14px;background:var(--bg);border-radius:var(--radius-sm)">
+      <div id="balanceBlock" style="display:none!important;margin-top:1rem;padding:12px 14px;background:var(--bg);border-radius:var(--radius-sm)">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
           <span style="font-size:13px;color:var(--text-muted)">Ваш баланс</span>
           <span style="font-size:15px;font-weight:700;font-family:'Unbounded',sans-serif" id="addBalance">0 грн</span>
@@ -581,7 +581,7 @@ loadNDPrices();
 </div>
 
 <!-- TOPUP MODAL -->
-<div class="overlay" id="topupModal" onclick="closeOverlay(event,'topupModal')">
+<div class="overlay" id="topupModal" style="display:none!important" onclick="closeOverlay(event,'topupModal')">
   <div class="modal modal-sm" onclick="event.stopPropagation()">
     <div class="modal-head">
       <h2>Поповнити рахунок</h2>
